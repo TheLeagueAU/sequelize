@@ -154,7 +154,7 @@ export class PostgresQueryGenerator extends AbstractQueryGenerator {
       + 'c.column_default as "Default",'
       + 'c.is_nullable as "Null", '
       + '(CASE WHEN c.udt_name = \'hstore\' THEN c.udt_name ELSE c.data_type END) || (CASE WHEN c.character_maximum_length IS NOT NULL THEN \'(\' || c.character_maximum_length || \')\' ELSE \'\' END) as "Type", '
-      + '(SELECT array_agg(e.enumlabel) FROM pg_catalog.pg_type t JOIN pg_catalog.pg_enum e ON t.oid=e.enumtypid WHERE t.typname=c.udt_name) AS "special", '
+      + `(SELECT ${this._arrayFunc('e.enumlabel')} FROM pg_catalog.pg_type t JOIN pg_catalog.pg_enum e ON t.oid=e.enumtypid WHERE t.typname=c.udt_name) AS "special", `
       + '(SELECT pgd.description FROM pg_catalog.pg_statio_all_tables AS st INNER JOIN pg_catalog.pg_description pgd on (pgd.objoid=st.relid) WHERE c.ordinal_position=pgd.objsubid AND c.table_name=st.relname) AS "Comment" '
       + 'FROM information_schema.columns c '
       + 'LEFT JOIN (SELECT tc.table_schema, tc.table_name, '
@@ -167,7 +167,8 @@ export class PostgresQueryGenerator extends AbstractQueryGenerator {
       + 'ON pk.table_schema=c.table_schema '
       + 'AND pk.table_name=c.table_name '
       + 'AND pk.column_name=c.column_name '
-      + `WHERE c.table_name = ${this.escape(tableName)} AND c.table_schema = ${this.escape(schema)}`;
+      + `WHERE c.table_name = ${this.escape(tableName)} AND c.table_schema = ${this.escape(schema)}`
+      + 'GROUP BY 1';
   }
 
   /**
@@ -398,7 +399,12 @@ export class PostgresQueryGenerator extends AbstractQueryGenerator {
     return `DELETE FROM ${table}${whereClause}`;
   }
 
-  showIndexesQuery(tableName) {
+  showIndexesQuery(tableName, options) {
+    // TOOD: work out if we can get a working query here. There's a problem with the GROUP BY.
+    if (this.options.useListAgg) {
+      return 'SELECT * FROM pg_class WHERE 1 = 0';
+    }
+
     let schemaJoin = '';
     let schemaWhere = '';
     if (typeof tableName !== 'string') {
@@ -409,7 +415,7 @@ export class PostgresQueryGenerator extends AbstractQueryGenerator {
 
     // This is ARCANE!
     return 'SELECT i.relname AS name, ix.indisprimary AS primary, ix.indisunique AS unique, ix.indkey AS indkey, '
-      + 'array_agg(a.attnum) as column_indexes, array_agg(a.attname) AS column_names, pg_get_indexdef(ix.indexrelid) '
+      + `${this._arrayFunc('a.attnum')} as column_indexes, ${this._arrayFunc('a.attname')} AS column_names, pg_get_indexdef(ix.indexrelid) `
       + `AS definition FROM pg_class t, pg_class i, pg_index ix, pg_attribute a${schemaJoin} `
       + 'WHERE t.oid = ix.indrelid AND i.oid = ix.indexrelid AND a.attrelid = t.oid AND '
       + `t.relkind = 'r' and t.relname = '${tableName}'${schemaWhere} `
@@ -795,7 +801,7 @@ export class PostgresQueryGenerator extends AbstractQueryGenerator {
       enumName = ` AND t.typname=${this.pgEnumName(tableDetails.tableName, attrName, { schema: false }).replace(/"/g, '\'')}`;
     }
 
-    return 'SELECT t.typname enum_name, array_agg(e.enumlabel ORDER BY enumsortorder) enum_value FROM pg_type t '
+    return `SELECT t.typname enum_name, ${this._arrayFunc('e.enumlabel')} ORDER BY enumsortorder) enum_value FROM pg_type t `
       + 'JOIN pg_enum e ON t.oid = e.enumtypid '
       + 'JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace '
       + `WHERE n.nspname = '${tableDetails.schema}'${enumName} GROUP BY 1`;

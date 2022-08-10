@@ -415,6 +415,13 @@ export interface Options extends Logging {
    * If defined the connection will use the provided schema instead of the default ("public").
    */
   schema?: string;
+
+  /**
+   * Override usage of array_agg
+   *
+   * @default false
+   */
+  useListAgg?: boolean;
 }
 
 export interface NormalizedOptions extends PartlyRequired<Options, 'transactionType' | 'isolationLevel' | 'dialectOptions' | 'dialect'> {

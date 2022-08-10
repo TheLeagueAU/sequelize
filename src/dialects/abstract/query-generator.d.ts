@@ -67,6 +67,7 @@ type HandleSequelizeMethodOptions = ParameterOptions & {
 
 export class AbstractQueryGenerator {
   _dialect: AbstractDialect;
+  _arrayFunc: (column: string) => string;
 
   setImmediateQuery(constraints: string[]): string;
   setDeferredQuery(constraints: string[]): string;
