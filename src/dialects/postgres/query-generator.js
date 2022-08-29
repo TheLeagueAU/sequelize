@@ -167,8 +167,8 @@ export class PostgresQueryGenerator extends AbstractQueryGenerator {
       + 'ON pk.table_schema=c.table_schema '
       + 'AND pk.table_name=c.table_name '
       + 'AND pk.column_name=c.column_name '
-      + `WHERE c.table_name = ${this.escape(tableName)} AND c.table_schema = ${this.escape(schema)}`
-      + 'GROUP BY 1';
+      + `WHERE c.table_name = ${this.escape(tableName)} AND c.table_schema = ${this.escape(schema)} `
+      + (this.useListAgg ? 'GROUP BY 1' : '');
   }
 
   /**
