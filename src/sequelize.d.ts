@@ -417,11 +417,14 @@ export interface Options extends Logging {
   schema?: string;
 
   /**
-   * Override usage of array_agg
+   * Enable Redshift compatibility. Currently, this:
+   * - Overrides usage of array_agg
+   * - Ignores enums for describeTableQuery
+   * - Skips showIndexesQuery
    *
    * @default false
    */
-  useListAgg?: boolean;
+  redshiftCompatibility?: boolean;
 }
 
 export interface NormalizedOptions extends PartlyRequired<Options, 'transactionType' | 'isolationLevel' | 'dialectOptions' | 'dialect'> {

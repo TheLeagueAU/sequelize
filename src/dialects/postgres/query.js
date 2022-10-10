@@ -1,5 +1,7 @@
 'use strict';
 
+import capitalize from 'lodash/capitalize';
+
 const { AbstractQuery } = require('../abstract/query');
 const { QueryTypes } = require('../../query-types');
 const sequelizeErrors = require('../../errors');
@@ -200,6 +202,17 @@ export class PostgresQuery extends AbstractQuery {
 
     if (QueryTypes.DESCRIBE === this.options.type) {
       const result = {};
+
+      if (this.sequelize.options.redshiftCompatibility) {
+        // Make properties available on their capitalised key
+        for (const row of rows) {
+          for (const key of Object.keys(row)) {
+            if (!Object.prototype.hasOwnProperty.call(row, capitalize(key))) {
+              row[capitalize(key)] = row[key];
+            }
+          }
+        }
+      }
 
       for (const row of rows) {
         result[row.Field] = {

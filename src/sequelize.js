@@ -183,7 +183,7 @@ export class Sequelize {
    * @param {object}   [options.hooks] An object of global hook functions that are called before and after certain lifecycle events. Global hooks will run after any model-specific hooks defined for the same event (See `Sequelize.Model.init()` for a list).  Additionally, `beforeConnect()`, `afterConnect()`, `beforeDisconnect()`, and `afterDisconnect()` hooks may be defined here.
    * @param {boolean}  [options.minifyAliases=false] A flag that defines if aliases should be minified (mostly useful to avoid Postgres alias character limit of 64)
    * @param {boolean}  [options.logQueryParameters=false] A flag that defines if show bind parameters in log.
-   * @param {boolean}  [options.useListAgg=false] use `listagg` instead of `array_agg` (for Redshift support)
+   * @param {boolean}  [options.redshiftCompatibility=false] A flag to enable Redshift compatibility
    */
   constructor(database, username, password, options) {
     if (arguments.length === 1 && _.isPlainObject(database)) {
@@ -245,7 +245,7 @@ export class Sequelize {
       benchmark: false,
       minifyAliases: false,
       logQueryParameters: false,
-      useListAgg: false,
+      redshiftCompatibility: false,
       ...options,
       pool: _.defaults(options.pool || {}, {
         max: 5,

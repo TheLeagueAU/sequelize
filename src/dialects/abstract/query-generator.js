@@ -44,7 +44,7 @@ export class AbstractQueryGenerator {
     this._dialect = options._dialect;
 
     // array function override for Redshift
-    this._arrayFunc = column => (this.options.useListAgg ? `SPLIT_TO_ARRAY(LISTAGG(${column}))` : `array_agg(${column})`);
+    this._arrayFunc = column => (this.options.redshiftCompatibility ? `SPLIT_TO_ARRAY(LISTAGG(${column}))` : `array_agg(${column})`);
 
     // wrap quoteIdentifier with common logic
     this._initQuoteIdentifier();
