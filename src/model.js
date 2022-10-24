@@ -1377,7 +1377,9 @@ Specify a different name for either index to resolve this issue.`);
             }
           }
 
-          await this.queryInterface.changeColumn(tableName, columnName, currentAttribute, options);
+          if (columns[columnName].type.replace('VARCHAR', 'CHARACTER VARYING') !== currentAttribute.type.toString().replace('VARCHAR', 'CHARACTER VARYING')) {
+            await this.queryInterface.changeColumn(tableName, columnName, currentAttribute, options);
+          }
         }
       }
     }

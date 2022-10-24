@@ -1,7 +1,7 @@
 {
   "name": "@oscarbarrett/sequelize-redshift",
   "description": "Sequelize modified for Redshift support",
-  "version": "0.0.3-development",
+  "version": "0.0.4-development",
   "funding": [
     {
       "type": "opencollective",

@@ -303,20 +303,22 @@ export class PostgresQueryGenerator extends AbstractQueryGenerator {
       let definition = this.dataTypeMapping(tableName, attributeName, attributes[attributeName]);
       let attrSql = '';
 
-      if (definition.includes('NOT NULL')) {
-        attrSql += query(`${this.quoteIdentifier(attributeName)} SET NOT NULL`);
+      if (!this.options.redshiftCompatibility) {
+        if (definition.includes('NOT NULL')) {
+          attrSql += query(`${this.quoteIdentifier(attributeName)} SET NOT NULL`);
 
-        definition = definition.replace('NOT NULL', '').trim();
-      } else if (!definition.includes('REFERENCES')) {
-        attrSql += query(`${this.quoteIdentifier(attributeName)} DROP NOT NULL`);
-      }
+          definition = definition.replace('NOT NULL', '').trim();
+        } else if (!definition.includes('REFERENCES')) {
+          attrSql += query(`${this.quoteIdentifier(attributeName)} DROP NOT NULL`);
+        }
 
-      if (definition.includes('DEFAULT')) {
-        attrSql += query(`${this.quoteIdentifier(attributeName)} SET DEFAULT ${definition.match(/DEFAULT ([^;]+)/)[1]}`);
+        if (definition.includes('DEFAULT')) {
+          attrSql += query(`${this.quoteIdentifier(attributeName)} SET DEFAULT ${definition.match(/DEFAULT ([^;]+)/)[1]}`);
 
-        definition = definition.replace(/(DEFAULT[^;]+)/, '').trim();
-      } else if (!definition.includes('REFERENCES')) {
-        attrSql += query(`${this.quoteIdentifier(attributeName)} DROP DEFAULT`);
+          definition = definition.replace(/(DEFAULT[^;]+)/, '').trim();
+        } else if (!definition.includes('REFERENCES')) {
+          attrSql += query(`${this.quoteIdentifier(attributeName)} DROP DEFAULT`);
+        }
       }
 
       if (attributes[attributeName].startsWith('ENUM(')) {
